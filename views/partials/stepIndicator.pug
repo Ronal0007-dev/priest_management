@@ -1,0 +1,20 @@
+mixin stepIndicator(current, priestId)
+  .step-wizard
+    .step-wizard-inner
+      - const steps = [{n:1,label:'Personal Info',icon:'fa-user'},{n:2,label:'Baptism',icon:'fa-water'},{n:3,label:'Confirmation',icon:'fa-dove'},{n:4,label:'Education',icon:'fa-graduation-cap'},{n:5,label:'Theology & Work',icon:'fa-church'}]
+      each step in steps
+        - const isDone = step.n < current
+        - const isActive = step.n === current
+        .step-item(class=isDone ? 'done' : isActive ? 'active' : '')
+          if priestId && isDone
+            a(href=`/admin/priests/step${step.n}?priestId=${priestId}` class="step-circle")
+              i(class=`fas ${step.icon}`)
+          else
+            .step-circle
+              if isDone
+                i.fas.fa-check
+              else
+                i(class=`fas ${step.icon}`)
+          span.step-label= step.label
+          if step.n < 5
+            .step-connector

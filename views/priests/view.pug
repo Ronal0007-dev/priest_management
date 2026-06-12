@@ -1,0 +1,174 @@
+extends ../layouts/main
+
+block content
+  .page-header
+    h2
+      i.fas.fa-id-card
+      |  Priest Profile
+    .header-actions
+      a(href="/admin/priests" class="btn btn-secondary")
+        i.fas.fa-arrow-left
+        |  Back
+      a(href=`/admin/priests/step1?priestId=${priest.id}` class="btn btn-warning")
+        i.fas.fa-edit
+        |  Edit
+      a(href=`/admin/priests/${priest.id}/print` class="btn btn-info" target="_blank")
+        i.fas.fa-print
+        |  Print
+      button.btn.btn-danger(onclick="confirmDelete()")
+        i.fas.fa-trash
+        |  Delete
+
+  .profile-layout
+    .profile-sidebar
+      .profile-photo-card
+        if priest.photo
+          img.profile-photo(src=`/uploads/${priest.photo}` alt=priest.fullName)
+        else
+          .profile-photo.photo-placeholder
+            i.fas.fa-user-tie
+        h2.profile-name= priest.fullName
+        span(class=`badge badge-${priest.priestStatus} badge-lg`)= priest.priestStatus.replace('_', ' ')
+        if priest.diocese
+          .profile-diocese
+            i.fas.fa-church
+            span= priest.diocese.name
+        if priest.placeOfWork
+          .profile-work
+            i.fas.fa-map-marker-alt
+            span= priest.placeOfWork
+
+    .profile-content
+      .info-card
+        .info-card-header
+          i.fas.fa-user
+          h3 Personal Information
+        .info-grid
+          .info-item
+            span.info-label Date of Birth
+            span.info-value= priest.dateOfBirth ? new Date(priest.dateOfBirth).toLocaleDateString('en-GB', {day:'2-digit', month:'long', year:'numeric'}) : '—'
+          .info-item
+            span.info-label Place of Birth
+            span.info-value= `${priest.placeOfBirthCity || '—'}, ${priest.placeOfBirthCountry || '—'}`
+          .info-item
+            span.info-label Marital Status
+            span.info-value= priest.maritalStatus ? priest.maritalStatus.charAt(0).toUpperCase() + priest.maritalStatus.slice(1) : '—'
+
+      .info-card
+        .info-card-header
+          i.fas.fa-water
+          h3 Baptism Information
+        .info-grid
+          .info-item
+            span.info-label Date of Baptism
+            span.info-value= priest.dateOfBaptism ? new Date(priest.dateOfBaptism).toLocaleDateString('en-GB', {day:'2-digit', month:'long', year:'numeric'}) : '—'
+          .info-item
+            span.info-label Place of Baptism
+            span.info-value= priest.placeOfBaptism || '—'
+          .info-item
+            span.info-label Baptized By
+            span.info-value= priest.baptizedBy || '—'
+
+      .info-card
+        .info-card-header
+          i.fas.fa-dove
+          h3 Confirmation Information
+        .info-grid
+          .info-item
+            span.info-label Date of Confirmation
+            span.info-value= priest.dateOfConfirmation ? new Date(priest.dateOfConfirmation).toLocaleDateString('en-GB', {day:'2-digit', month:'long', year:'numeric'}) : '—'
+          .info-item
+            span.info-label Place of Confirmation
+            span.info-value= priest.placeOfConfirmation || '—'
+          .info-item
+            span.info-label Bishop Who Confirmed
+            span.info-value= priest.confirmationBishop || '—'
+
+      .info-card
+        .info-card-header
+          i.fas.fa-graduation-cap
+          h3 Education Information
+        .edu-timeline
+          .edu-item
+            .edu-icon
+              i.fas.fa-school
+            .edu-details
+              strong Primary School
+              span= priest.primarySchool || '—'
+          .edu-item
+            .edu-icon
+              i.fas.fa-book
+            .edu-details
+              strong Secondary School
+              span= priest.secondarySchool || '—'
+          if priest.college
+            .edu-item
+              .edu-icon
+                i.fas.fa-university
+              .edu-details
+                strong College
+                span= priest.college
+                if priest.collegeSpecialization
+                  em  — #{priest.collegeSpecialization}
+          if priest.university
+            .edu-item
+              .edu-icon
+                i.fas.fa-university
+              .edu-details
+                strong University
+                span= priest.university
+                if priest.universitySpecialization
+                  em  — #{priest.universitySpecialization}
+
+      .info-card
+        .info-card-header
+          i.fas.fa-church
+          h3 Theology & Ministry
+        .info-grid
+          .info-item
+            span.info-label Theology Level
+            span.info-value
+              if priest.theologyLevel
+                span.badge.badge-blue= priest.theologyLevel
+              else
+                | —
+          .info-item
+            span.info-label Theology Institution
+            span.info-value= priest.theologyInstitution || '—'
+          .info-item
+            span.info-label Ordination Date
+            span.info-value= priest.ordinationDate ? new Date(priest.ordinationDate).toLocaleDateString('en-GB', {day:'2-digit', month:'long', year:'numeric'}) : '—'
+          .info-item
+            span.info-label Date Assigned
+            span.info-value= priest.dateAssigned ? new Date(priest.dateAssigned).toLocaleDateString('en-GB', {day:'2-digit', month:'long', year:'numeric'}) : '—'
+          .info-item
+            span.info-label Diocese
+            span.info-value= priest.diocese ? priest.diocese.name : '—'
+          .info-item
+            span.info-label Place of Work
+            span.info-value= priest.placeOfWork || '—'
+
+  #deleteModal.modal(style="display:none")
+    .modal-backdrop(onclick="closeModal()")
+    .modal-content
+      .modal-header
+        h3
+          i.fas.fa-exclamation-triangle
+          |  Confirm Delete
+      .modal-body
+        p Are you sure you want to delete #[strong= priest.fullName]?
+        p.text-danger This action cannot be undone.
+      .modal-footer
+        button.btn.btn-secondary(onclick="closeModal()") Cancel
+        form(action=`/admin/priests/${priest.id}/delete` method="POST")
+          button(type="submit" class="btn btn-danger")
+            i.fas.fa-trash
+            |  Delete
+
+  script.
+    function confirmDelete() {
+      document.getElementById('deleteModal').style.display = 'flex';
+    }
+    function closeModal() {
+      document.getElementById('deleteModal').style.display = 'none';
+    }

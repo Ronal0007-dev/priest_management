@@ -1,0 +1,46 @@
+extends ../layouts/main
+
+block content
+  include ../partials/stepIndicator
+
+  .form-page
+    .form-header
+      h2
+        i.fas.fa-dove
+        |  #{priest.fullName}
+      p Complete all 5 steps to register a priest
+
+    +stepIndicator(3, priest.id)
+
+    .form-card
+      h3.step-title
+        span.step-badge Step 3
+        |  Confirmation Information
+
+      form(action="/admin/priests/step3" method="POST")
+        input(type="hidden" name="priestId" value=priest.id)
+
+        .form-grid
+          .form-group
+            label Date of Confirmation
+            input(type="date" name="dateOfConfirmation" value=priest.dateOfConfirmation || '')
+
+          .form-group
+            label Place of Confirmation
+            input(type="text" name="placeOfConfirmation" placeholder="e.g. Cathedral of St. Joseph" value=priest.placeOfConfirmation || '')
+
+          .form-group.full-width
+            label Bishop Who Confirmed
+            input(type="text" name="confirmationBishop" placeholder="e.g. Bishop John Mapunda" value=priest.confirmationBishop || '')
+
+        .info-note
+          i.fas.fa-info-circle
+          span Confirmation information can be filled later if records are unavailable.
+
+        .form-actions
+          a(href=`/admin/priests/step2?priestId=${priest.id}` class="btn btn-secondary")
+            i.fas.fa-arrow-left
+            |  Back
+          button(type="submit" class="btn btn-primary")
+            | Next: Education
+            i.fas.fa-arrow-right

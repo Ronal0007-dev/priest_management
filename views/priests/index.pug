@@ -1,0 +1,270 @@
+extends ../layouts/main
+
+block content
+  - const q = query || {}
+
+  .page-header
+    h2
+      i.fas.fa-user-tie
+      |  Priests Registry
+    a(href="/admin/priests/step1" class="btn btn-primary")
+      i.fas.fa-user-plus
+      |  Add New Priest
+
+  .card
+    .card-body.search-body
+      form.search-bar(method="GET" action="/admin/priests")
+        .search-row
+          .search-input-wrap
+            i.fas.fa-search
+            input(type="text" name="search" placeholder="Search by name..." value=q.search || '')
+          select(name="diocese")
+            option(value="" selected=!q.diocese) All Dioceses
+            each d in dioceses
+              option(value=d.id selected=q.diocese == d.id)= d.name
+          select(name="status")
+            option(value="" selected=!q.status) All Statuses
+            option(value="active" selected=q.status === 'active') Active
+            option(value="retired" selected=q.status === 'retired') Retired
+            option(value="deceased" selected=q.status === 'deceased') Deceased
+            option(value="on_leave" selected=q.status === 'on_leave') On Leave
+          button(type="submit" class="btn btn-primary")
+            i.fas.fa-filter
+            |  Filter
+          if q.search || q.diocese || q.status
+            a(href="/admin/priests" class="btn btn-secondary")
+              i.fas.fa-times
+              |  Clear
+
+  .results-info
+    span
+      i.fas.fa-list-ul
+      |  Showing &nbsp;
+      strong #{priests.length}
+      |  of &nbsp;
+      strong #{count}
+      |  priest(s)
+    if totalPages > 1
+      span.results-page  — Page #{currentPage} of #{totalPages}
+
+  if priests.length
+    .card
+      table.data-table
+        thead
+          tr
+            th #
+            th Priest
+            th Diocese
+            th Place of Work
+            th Ordination
+            th Status
+            th Actions
+        tbody
+          each priest, i in priests
+            tr(id=`priest-row-${priest.id}`)
+              td= ((currentPage - 1) * limit) + i + 1
+              td
+                .priest-name-cell
+                  if priest.photo
+                    img.avatar-sm(src=`/uploads/${priest.photo}` alt=priest.fullName)
+                  else
+                    .avatar-sm.avatar-placeholder
+                      i.fas.fa-user
+                  div
+                    strong= priest.fullName
+                    br
+                    small.text-muted= priest.placeOfBirthCountry
+              td= priest.diocese ? priest.diocese.name : '—'
+              td= priest.placeOfWork || '—'
+              td= priest.ordinationDate ? new Date(priest.ordinationDate).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : '—'
+              td
+                .status-cell
+                  span(class=`badge badge-${priest.priestStatus}` id=`status-badge-${priest.id}`)= priest.priestStatus.replace('_', ' ')
+                  button.status-toggle-btn(
+                    type="button"
+                    title="Change Status"
+                    onclick=`openStatusModal(${priest.id}, '${priest.fullName}', '${priest.priestStatus}')`
+                  )
+                    i.fas.fa-exchange-alt
+              td.actions-cell
+                a(href=`/admin/priests/${priest.id}/view` class="btn-icon" title="View")
+                  i.fas.fa-eye
+                a(href=`/admin/priests/step1?priestId=${priest.id}` class="btn-icon" title="Edit")
+                  i.fas.fa-edit
+                a(href=`/admin/priests/${priest.id}/print` class="btn-icon" title="Print" target="_blank")
+                  i.fas.fa-print
+                button.btn-icon.btn-danger(onclick=`confirmDelete(${priest.id}, '${priest.fullName}')` title="Delete")
+                  i.fas.fa-trash
+
+    if totalPages > 1
+      .pagination
+        - const qs = `&search=${q.search||''}&diocese=${q.diocese||''}&status=${q.status||''}`
+        if currentPage > 1
+          a(href=`?page=1${qs}` class="page-btn" title="First")
+            i.fas.fa-angle-double-left
+          a(href=`?page=${currentPage-1}${qs}` class="page-btn")
+            i.fas.fa-angle-left
+        - const startPage = Math.max(1, currentPage - 2)
+        - const endPage = Math.min(totalPages, currentPage + 2)
+        if startPage > 1
+          span.page-ellipsis …
+        each n in Array.from({length: endPage - startPage + 1}, (_, i) => startPage + i)
+          a(href=`?page=${n}${qs}` class=`page-btn${n === currentPage ? ' active' : ''}`)= n
+        if endPage < totalPages
+          span.page-ellipsis …
+        if currentPage < totalPages
+          a(href=`?page=${currentPage+1}${qs}` class="page-btn")
+            i.fas.fa-angle-right
+          a(href=`?page=${totalPages}${qs}` class="page-btn" title="Last")
+            i.fas.fa-angle-double-right
+
+  else
+    .empty-state.large
+      i.fas.fa-user-tie
+      h3 No priests found
+      p Try adjusting your filters or add a new priest.
+      a(href="/admin/priests/step1" class="btn btn-primary")
+        i.fas.fa-user-plus
+        |  Add New Priest
+
+  //- Status change modal
+  #statusModal.modal(style="display:none")
+    .modal-backdrop(onclick="closeStatusModal()")
+    .modal-content
+      .modal-header.modal-header-blue
+        h3
+          i.fas.fa-exchange-alt
+          |  Change Priest Status
+      .modal-body
+        p Change status for: #[strong#statusPriestName]
+        .status-options
+          label.status-option(data-status="active")
+            input(type="radio" name="newStatus" value="active")
+            span.status-opt-badge.badge-active Active
+            span.status-opt-desc Priest is currently serving
+          label.status-option(data-status="retired")
+            input(type="radio" name="newStatus" value="retired")
+            span.status-opt-badge.badge-retired Retired
+            span.status-opt-desc Priest has retired from active ministry
+          label.status-option(data-status="on_leave")
+            input(type="radio" name="newStatus" value="on_leave")
+            span.status-opt-badge.badge-on_leave On Leave
+            span.status-opt-desc Temporarily away from duties
+          label.status-option(data-status="deceased")
+            input(type="radio" name="newStatus" value="deceased")
+            span.status-opt-badge.badge-deceased Deceased
+            span.status-opt-desc Priest has passed away
+      .modal-footer
+        button.btn.btn-secondary(onclick="closeStatusModal()")
+          i.fas.fa-times
+          |  Cancel
+        button.btn.btn-primary(onclick="submitStatus()" id="saveStatusBtn")
+          i.fas.fa-save
+          |  Save Status
+
+  //- Delete confirmation modal
+  #deleteModal.modal(style="display:none")
+    .modal-backdrop(onclick="closeDeleteModal()")
+    .modal-content
+      .modal-header
+        h3
+          i.fas.fa-exclamation-triangle
+          |  Confirm Delete
+      .modal-body
+        p Are you sure you want to delete #[strong#deleteName]?
+        p.text-danger This action cannot be undone.
+      .modal-footer
+        button.btn.btn-secondary(onclick="closeDeleteModal()") Cancel
+        form#deleteForm(method="POST")
+          button(type="submit" class="btn btn-danger")
+            i.fas.fa-trash
+            |  Delete
+
+  script.
+    let currentPriestId = null;
+    let currentStatus = null;
+
+    function openStatusModal(id, name, status) {
+      currentPriestId = id;
+      currentStatus = status;
+      document.getElementById('statusPriestName').textContent = name;
+
+      // Mark current status
+      document.querySelectorAll('.status-option').forEach(opt => {
+        const radio = opt.querySelector('input');
+        const isSelected = radio.value === status;
+        radio.checked = isSelected;
+        opt.classList.toggle('selected', isSelected);
+      });
+
+      document.getElementById('statusModal').style.display = 'flex';
+    }
+
+    // Status option click feedback
+    document.querySelectorAll('.status-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('.status-option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        opt.querySelector('input').checked = true;
+      });
+    });
+
+    function closeStatusModal() {
+      document.getElementById('statusModal').style.display = 'none';
+      currentPriestId = null;
+    }
+
+    async function submitStatus() {
+      const selected = document.querySelector('input[name="newStatus"]:checked');
+      if (!selected) return;
+      const newStatus = selected.value;
+      if (newStatus === currentStatus) { closeStatusModal(); return; }
+
+      const btn = document.getElementById('saveStatusBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
+
+      try {
+        const res = await fetch(`/admin/priests/${currentPriestId}/status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        });
+        const data = await res.json();
+        if (data.success) {
+          // Update badge in-place
+          const badge = document.getElementById('status-badge-' + currentPriestId);
+          if (badge) {
+            badge.className = 'badge badge-' + newStatus;
+            badge.textContent = newStatus.replace('_', ' ');
+          }
+          closeStatusModal();
+          showToast('Status updated to "' + newStatus.replace('_', ' ') + '"', 'success');
+        } else {
+          showToast(data.message || 'Failed to update status', 'error');
+        }
+      } catch(e) {
+        showToast('Network error, please try again', 'error');
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-save"></i> Save Status';
+    }
+
+    function showToast(msg, type) {
+      const t = document.createElement('div');
+      t.className = 'toast toast-' + type;
+      t.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${msg}`;
+      document.body.appendChild(t);
+      setTimeout(() => t.classList.add('show'), 10);
+      setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3500);
+    }
+
+    function confirmDelete(id, name) {
+      document.getElementById('deleteName').textContent = name;
+      document.getElementById('deleteForm').action = `/admin/priests/${id}/delete`;
+      document.getElementById('deleteModal').style.display = 'flex';
+    }
+    function closeDeleteModal() {
+      document.getElementById('deleteModal').style.display = 'none';
+    }

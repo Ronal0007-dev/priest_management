@@ -1,0 +1,46 @@
+extends ../layouts/main
+
+block content
+  include ../partials/stepIndicator
+
+  .form-page
+    .form-header
+      h2
+        i.fas.fa-water
+        |  #{priest.fullName}
+      p Complete all 5 steps to register a priest
+
+    +stepIndicator(2, priest.id)
+
+    .form-card
+      h3.step-title
+        span.step-badge Step 2
+        |  Baptism Information
+
+      form(action="/admin/priests/step2" method="POST")
+        input(type="hidden" name="priestId" value=priest.id)
+
+        .form-grid
+          .form-group
+            label Date of Baptism
+            input(type="date" name="dateOfBaptism" value=priest.dateOfBaptism || '')
+
+          .form-group
+            label Place of Baptism
+            input(type="text" name="placeOfBaptism" placeholder="e.g. St. Joseph's Church, Moshi" value=priest.placeOfBaptism || '')
+
+          .form-group.full-width
+            label Person Who Baptized
+            input(type="text" name="baptizedBy" placeholder="e.g. Fr. Peter Mwangi" value=priest.baptizedBy || '')
+
+        .info-note
+          i.fas.fa-info-circle
+          span Baptism information can be filled later if not immediately available.
+
+        .form-actions
+          a(href=`/admin/priests/step1?priestId=${priest.id}` class="btn btn-secondary")
+            i.fas.fa-arrow-left
+            |  Back
+          button(type="submit" class="btn btn-primary")
+            | Next: Confirmation
+            i.fas.fa-arrow-right

@@ -1,0 +1,60 @@
+extends ../layouts/auth
+
+block content
+  .login-page
+    .login-container
+      .login-brand
+        .brand-icon
+          i.fas.fa-cross
+        h1.brand-title Diocese Priest
+        p.brand-subtitle Management System
+      
+      .login-card
+        h2.login-heading Welcome Back
+        p.login-subtext Sign in to your administrator account
+
+        if flash && flash.error && flash.error.length
+          .alert.alert-error
+            i.fas.fa-exclamation-circle
+            span= flash.error[0]
+
+        if flash && flash.success && flash.success.length
+          .alert.alert-success
+            i.fas.fa-check-circle
+            span= flash.success[0]
+
+        form(action="/login" method="POST" class="login-form")
+          .form-group
+            label(for="username")
+              i.fas.fa-user
+              |  Username
+            input#username(type="text" name="username" placeholder="Enter your username" required autocomplete="username")
+
+          .form-group
+            label(for="password")
+              i.fas.fa-lock
+              |  Password
+            .input-wrap
+              input#password(type="password" name="password" placeholder="Enter your password" required autocomplete="current-password")
+              button.toggle-pw(type="button" onclick="togglePassword()")
+                i.fas.fa-eye#pwIcon
+
+          button.btn-login(type="submit")
+            i.fas.fa-sign-in-alt
+            |  Sign In
+
+      .login-footer
+        p &copy; #{new Date().getFullYear()} Diocese Priest Management System
+
+  script.
+    function togglePassword() {
+      const pw = document.getElementById('password');
+      const icon = document.getElementById('pwIcon');
+      if (pw.type === 'password') {
+        pw.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        pw.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    }

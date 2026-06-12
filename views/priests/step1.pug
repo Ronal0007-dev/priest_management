@@ -1,0 +1,121 @@
+extends ../layouts/main
+
+block content
+  include ../partials/stepIndicator
+
+  .form-page
+    .form-header
+      h2
+        i.fas.fa-user-tie
+        |  #{priestId ? 'Edit' : 'Add New'} Priest
+      p Complete all 5 steps to register a priest
+
+    +stepIndicator(1, priestId)
+
+    .form-card
+      h3.step-title
+        span.step-badge Step 1
+        |  Personal Information
+
+      form(action="/admin/priests/step1" method="POST" enctype="multipart/form-data")
+        if priestId
+          input(type="hidden" name="priestId" value=priestId)
+
+        .form-grid
+          .form-group.full-width
+            label Full Name *
+            input(type="text" name="fullName" placeholder="e.g. Joseph Mkwawa Mwangi" required value=priest ? priest.fullName : '')
+
+          .form-group
+            label Date of Birth *
+            input(type="date" name="dateOfBirth" required value=priest ? priest.dateOfBirth : '')
+
+          .form-group
+            label Marital Status *
+            select(name="maritalStatus" required)
+              option(value="" disabled selected=!priest) -- Select Status --
+              option(value="single" selected=priest && priest.maritalStatus === 'single') Single
+              option(value="married" selected=priest && priest.maritalStatus === 'married') Married
+              option(value="widowed" selected=priest && priest.maritalStatus === 'widowed') Widowed
+              option(value="divorced" selected=priest && priest.maritalStatus === 'divorced') Divorced
+
+          .form-group
+            label Country of Birth *
+            select#countrySelect(name="placeOfBirthCountry" required onchange="loadCities(this.value)")
+              option(value="" disabled) -- Select Country --
+              each country in countries
+                option(value=country.name selected=priest && priest.placeOfBirthCountry === country.name)= country.name
+
+          .form-group
+            label City / Place of Birth *
+            select#citySelect(name="placeOfBirthCity" required)
+              option(value="" disabled selected) -- Select City --
+              if priest && priest.placeOfBirthCity
+                option(value=priest.placeOfBirthCity selected)= priest.placeOfBirthCity
+
+          .form-group.full-width
+            label Priest Photo (optional)
+            .upload-area
+              input(type="file" name="photo" accept="image/*" onchange="previewPhoto(this)")
+              .upload-hint
+                i.fas.fa-camera
+                span Click to upload photo (max 5MB)
+            if priest && priest.photo
+              .photo-preview-existing
+                img(src=`/uploads/${priest.photo}` alt="Current photo")
+                span Current photo
+            #photoPreview
+
+        .form-actions
+          a(href="/admin/priests" class="btn btn-secondary")
+            i.fas.fa-times
+            |  Cancel
+          button(type="submit" class="btn btn-primary")
+            | Next: Baptism Info
+            i.fas.fa-arrow-right
+
+  script.
+    const countriesData = !{JSON.stringify(countries)};
+
+    function loadCities(countryName) {
+      const c = countriesData.find(c => c.name === countryName);
+      const sel = document.getElementById('citySelect');
+      sel.innerHTML = '<option value="" disabled selected>-- Select City --</option>';
+      if (c) {
+        c.cities.forEach(city => {
+          const opt = document.createElement('option');
+          opt.value = city; opt.textContent = city;
+          sel.appendChild(opt);
+        });
+      }
+    }
+
+    function previewPhoto(input) {
+      const preview = document.getElementById('photoPreview');
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          preview.innerHTML = `<img src="${e.target.result}" class="photo-thumb" alt="Preview">`;
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    // Pre-load cities if editing
+    window.addEventListener('DOMContentLoaded', () => {
+      const country = document.getElementById('countrySelect').value;
+      if (country) {
+        const existing = '#{priest ? priest.placeOfBirthCity : ""}';
+        const c = countriesData.find(c => c.name === country);
+        const sel = document.getElementById('citySelect');
+        sel.innerHTML = '<option value="" disabled>-- Select City --</option>';
+        if (c) {
+          c.cities.forEach(city => {
+            const opt = document.createElement('option');
+            opt.value = city; opt.textContent = city;
+            if (city === existing) opt.selected = true;
+            sel.appendChild(opt);
+          });
+        }
+      }
+    });

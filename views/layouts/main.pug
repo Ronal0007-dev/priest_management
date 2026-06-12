@@ -1,0 +1,75 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title= title + ' | Priest Management System'
+    link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css")
+    link(rel="stylesheet" href="/css/main.css")
+  body.app-layout
+    //- Sidebar
+    aside.sidebar
+      .sidebar-header
+        .logo-wrap
+          i.fas.fa-cross.logo-icon
+          .logo-text
+            span.logo-main Diocese
+            span.logo-sub Priest System
+      nav.sidebar-nav
+        .nav-section
+          span.nav-label Main
+          a(href="/admin/dashboard" class=currentPath === '/admin/dashboard' ? 'nav-item active' : 'nav-item')
+            i.fas.fa-tachometer-alt
+            span Dashboard
+          a(href="/admin/priests" class=currentPath && currentPath.startsWith('/admin/priests') ? 'nav-item active' : 'nav-item')
+            i.fas.fa-user-tie
+            span Priests
+          a(href="/admin/dioceses" class=currentPath && currentPath.startsWith('/admin/dioceses') ? 'nav-item active' : 'nav-item')
+            i.fas.fa-church
+            span Dioceses
+        .nav-section
+          span.nav-label Actions
+          a(href="/admin/priests/step1" class="nav-item")
+            i.fas.fa-user-plus
+            span Add Priest
+          a(href="/admin/dioceses/create" class="nav-item")
+            i.fas.fa-plus-circle
+            span Add Diocese
+      .sidebar-footer
+        .user-info
+          .user-avatar
+            i.fas.fa-user-circle
+          .user-details
+            span.user-name= user ? user.fullName || user.username : 'Admin'
+            span.user-role= user ? user.role : ''
+        a(href="/logout" class="logout-btn")
+          i.fas.fa-sign-out-alt
+          span Logout
+
+    //- Main Content
+    main.main-content
+      header.topbar
+        .topbar-left
+          button.sidebar-toggle(onclick="toggleSidebar()")
+            i.fas.fa-bars
+          .breadcrumb
+            span= title
+        .topbar-right
+          span.date-display#dateDisplay
+            i.fas.fa-calendar-alt
+
+      .content-area
+        if flash && flash.success && flash.success.length
+          .alert.alert-success
+            i.fas.fa-check-circle
+            span= flash.success[0]
+        if flash && flash.error && flash.error.length
+          .alert.alert-error
+            i.fas.fa-exclamation-circle
+            span= flash.error[0]
+
+        block content
+
+    script(src="/js/main.js")
+
+//- Print layout

@@ -1,0 +1,140 @@
+extends ../layouts/main
+
+block content
+  - const q = query || {}
+
+  .page-header
+    h2
+      i.fas.fa-church
+      |  Dioceses Management
+    .header-actions
+      a(href="/admin/dioceses/print" class="btn btn-info" target="_blank")
+        i.fas.fa-print
+        |  Print List
+      a(href="/admin/dioceses/create" class="btn btn-primary")
+        i.fas.fa-plus
+        |  Add Diocese
+
+  .card
+    .card-body.search-body
+      form.search-bar(method="GET" action="/admin/dioceses")
+        .search-row
+          .search-input-wrap
+            i.fas.fa-search
+            input(type="text" name="search" placeholder="Search dioceses..." value=q.search || '')
+          select(name="status")
+            option(value="" selected=!q.status) All Statuses
+            option(value="active" selected=q.status === 'active') Active
+            option(value="inactive" selected=q.status === 'inactive') Inactive
+          button(type="submit" class="btn btn-primary")
+            i.fas.fa-filter
+            |  Filter
+          if q.search || q.status
+            a(href="/admin/dioceses" class="btn btn-secondary")
+              i.fas.fa-times
+              |  Clear
+
+  .results-info
+    span
+      i.fas.fa-list-ul
+      |  Showing &nbsp;
+      strong #{dioceses ? dioceses.length : 0}
+      |  of &nbsp;
+      strong #{count || 0}
+      |  diocese(s)
+    if totalPages > 1
+      span.results-page  — Page #{currentPage} of #{totalPages}
+
+  if dioceses && dioceses.length
+    .card
+      table.data-table
+        thead
+          tr
+            th #
+            th Diocese Name
+            th Description
+            th Priests
+            th Status
+            th Actions
+        tbody
+          each diocese, i in dioceses
+            tr
+              td= ((currentPage - 1) * limit) + i + 1
+              td
+                .diocese-name-cell
+                  i.fas.fa-church
+                  strong= diocese.name
+              td.desc-cell= diocese.description ? diocese.description.substring(0, 70) + (diocese.description.length > 70 ? '…' : '') : '—'
+              td
+                span.badge.badge-blue= (diocese.priests ? diocese.priests.length : 0) + ' priest(s)'
+              td
+                span(class=diocese.isActive ? 'badge badge-active' : 'badge badge-inactive')
+                  = diocese.isActive ? 'Active' : 'Inactive'
+              td.actions-cell
+                a(href=`/admin/dioceses/${diocese.id}/edit` class="btn-icon" title="Edit")
+                  i.fas.fa-edit
+                button.btn-icon.btn-danger(onclick=`confirmDelete(${diocese.id}, '${diocese.name.replace(/'/g, "\\'")}')` title="Delete")
+                  i.fas.fa-trash
+
+    if totalPages > 1
+      .pagination
+        - const qs = `&search=${q.search||''}&status=${q.status||''}`
+        if currentPage > 1
+          a(href=`?page=1${qs}` class="page-btn" title="First")
+            i.fas.fa-angle-double-left
+          a(href=`?page=${currentPage-1}${qs}` class="page-btn")
+            i.fas.fa-angle-left
+        - const startPage = Math.max(1, currentPage - 2)
+        - const endPage = Math.min(totalPages, currentPage + 2)
+        if startPage > 1
+          span.page-ellipsis …
+        each n in Array.from({length: endPage - startPage + 1}, (_, i) => startPage + i)
+          a(href=`?page=${n}${qs}` class=`page-btn${n === currentPage ? ' active' : ''}`)= n
+        if endPage < totalPages
+          span.page-ellipsis …
+        if currentPage < totalPages
+          a(href=`?page=${currentPage+1}${qs}` class="page-btn")
+            i.fas.fa-angle-right
+          a(href=`?page=${totalPages}${qs}` class="page-btn" title="Last")
+            i.fas.fa-angle-double-right
+
+  else
+    .empty-state.large
+      i.fas.fa-church
+      h3 No dioceses found
+      if q.search || q.status
+        p Try adjusting your search filters.
+        a(href="/admin/dioceses" class="btn btn-secondary") Clear Filters
+      else
+        p Start by adding your first diocese.
+        a(href="/admin/dioceses/create" class="btn btn-primary")
+          i.fas.fa-plus
+          |  Add Diocese
+
+  //- Delete modal
+  #deleteModal.modal(style="display:none")
+    .modal-backdrop(onclick="closeModal()")
+    .modal-content
+      .modal-header
+        h3
+          i.fas.fa-exclamation-triangle
+          |  Confirm Delete
+      .modal-body
+        p Are you sure you want to delete #[strong#deleteName]?
+        p.text-danger Dioceses with assigned priests cannot be deleted.
+      .modal-footer
+        button.btn.btn-secondary(onclick="closeModal()") Cancel
+        form#deleteForm(method="POST")
+          button(type="submit" class="btn btn-danger")
+            i.fas.fa-trash
+            |  Delete
+
+  script.
+    function confirmDelete(id, name) {
+      document.getElementById('deleteName').textContent = name;
+      document.getElementById('deleteForm').action = `/admin/dioceses/${id}/delete`;
+      document.getElementById('deleteModal').style.display = 'flex';
+    }
+    function closeModal() {
+      document.getElementById('deleteModal').style.display = 'none';
+    }

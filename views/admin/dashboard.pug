@@ -1,0 +1,108 @@
+extends ../layouts/main
+
+block content
+  .dashboard
+    .stats-grid
+      .stat-card.stat-blue
+        .stat-icon
+          i.fas.fa-user-tie
+        .stat-info
+          span.stat-num= totalPriests
+          span.stat-label Total Priests
+      .stat-card.stat-green
+        .stat-icon
+          i.fas.fa-check-circle
+        .stat-info
+          span.stat-num= activePriests
+          span.stat-label Active Priests
+      .stat-card.stat-purple
+        .stat-icon
+          i.fas.fa-church
+        .stat-info
+          span.stat-num= totalDioceses
+          span.stat-label Dioceses
+      .stat-card.stat-orange
+        .stat-icon
+          i.fas.fa-user-clock
+        .stat-info
+          span.stat-num= totalPriests - activePriests
+          span.stat-label Inactive / Retired
+
+    .dashboard-grid
+      .card
+        .card-header
+          h3
+            i.fas.fa-history
+            |  Recently Added Priests
+          a(href="/admin/priests" class="btn-link") View All →
+        .card-body
+          if recentPriests && recentPriests.length
+            table.data-table
+              thead
+                tr
+                  th Name
+                  th Diocese
+                  th Status
+                  th Actions
+              tbody
+                each priest in recentPriests
+                  tr
+                    td
+                      .priest-name-cell
+                        if priest.photo
+                          img.avatar-sm(src=`/uploads/${priest.photo}` alt=priest.fullName)
+                        else
+                          .avatar-sm.avatar-placeholder
+                            i.fas.fa-user
+                        span= priest.fullName
+                    td= priest.diocese ? priest.diocese.name : '—'
+                    td
+                      span(class=`badge badge-${priest.priestStatus}`)= priest.priestStatus
+                    td.actions-cell
+                      a(href=`/admin/priests/${priest.id}/view` class="btn-icon" title="View")
+                        i.fas.fa-eye
+          else
+            .empty-state
+              i.fas.fa-user-plus
+              p No priests added yet.
+              a(href="/admin/priests/step1" class="btn btn-primary") Add First Priest
+
+      .card
+        .card-header
+          h3
+            i.fas.fa-church
+            |  Dioceses Overview
+          a(href="/admin/dioceses" class="btn-link") Manage →
+        .card-body
+          if byDiocese && byDiocese.length
+            .diocese-list
+              each d in byDiocese
+                .diocese-item
+                  .diocese-name
+                    i.fas.fa-map-marker-alt
+                    span= d.name
+                  .diocese-count
+                    span.badge.badge-blue= (d.priests ? d.priests.length : 0) + ' priests'
+          else
+            .empty-state
+              i.fas.fa-church
+              p No dioceses yet.
+              a(href="/admin/dioceses/create" class="btn btn-primary") Add Diocese
+
+    .quick-actions
+      h3
+        i.fas.fa-bolt
+        |  Quick Actions
+      .actions-grid
+        a(href="/admin/priests/step1" class="action-card")
+          i.fas.fa-user-plus
+          span Add New Priest
+        a(href="/admin/priests" class="action-card")
+          i.fas.fa-list
+          span View All Priests
+        a(href="/admin/dioceses/create" class="action-card")
+          i.fas.fa-church
+          span Add Diocese
+        a(href="/admin/dioceses" class="action-card")
+          i.fas.fa-map
+          span Manage Dioceses

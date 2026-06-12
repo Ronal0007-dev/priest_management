@@ -1,0 +1,32 @@
+extends ../layouts/main
+
+block content
+  .page-header
+    h2
+      i.fas.fa-edit
+      |  Edit Diocese
+    a(href="/admin/dioceses" class="btn btn-secondary")
+      i.fas.fa-arrow-left
+      |  Back
+
+  .form-card.form-card-narrow
+    form(action=`/admin/dioceses/${diocese.id}/edit` method="POST")
+      .form-group
+        label Diocese Name *
+        input(type="text" name="name" value=diocese.name required)
+
+      .form-group
+        label Description
+        textarea(name="description" rows="4")= diocese.description || ''
+
+      .form-group
+        label Status
+        select(name="isActive")
+          option(value="1" selected=diocese.isActive) Active
+          option(value="0" selected=!diocese.isActive) Inactive
+
+      .form-actions
+        a(href="/admin/dioceses" class="btn btn-secondary") Cancel
+        button(type="submit" class="btn btn-primary")
+          i.fas.fa-save
+          |  Update Diocese

@@ -1,0 +1,77 @@
+extends ../layouts/main
+
+block content
+  include ../partials/stepIndicator
+
+  .form-page
+    .form-header
+      h2
+        i.fas.fa-graduation-cap
+        |  #{priest.fullName}
+      p Complete all 5 steps to register a priest
+
+    +stepIndicator(4, priest.id)
+
+    .form-card
+      h3.step-title
+        span.step-badge Step 4
+        |  Education Information
+
+      form(action="/admin/priests/step4" method="POST")
+        input(type="hidden" name="priestId" value=priest.id)
+
+        .education-section
+          h4.edu-level
+            i.fas.fa-school
+            |  Primary Education
+          .form-grid
+            .form-group.full-width
+              label Primary School Name *
+              input(type="text" name="primarySchool" placeholder="e.g. Moshi Primary School" required value=priest.primarySchool || '')
+
+        .education-section
+          h4.edu-level
+            i.fas.fa-book
+            |  Secondary Education
+          .form-grid
+            .form-group.full-width
+              label Secondary School Name *
+              input(type="text" name="secondarySchool" placeholder="e.g. Kilimanjaro Secondary School" required value=priest.secondarySchool || '')
+
+        .education-section
+          h4.edu-level
+            i.fas.fa-university
+            |  College (Optional)
+          .form-grid
+            .form-group
+              label College Name
+              input#collegeInput(type="text" name="college" placeholder="e.g. Arusha Technical College" value=priest.college || '' oninput="toggleSpecialization('college', this.value)")
+            .form-group#collegeSpecWrap(style=priest && priest.college ? '' : 'display:none')
+              label Area of Specialization
+              input(type="text" name="collegeSpecialization" placeholder="e.g. Philosophy" value=priest.collegeSpecialization || '')
+
+        .education-section
+          h4.edu-level
+            i.fas.fa-university
+            |  University (Optional)
+          .form-grid
+            .form-group
+              label University Name
+              input#universityInput(type="text" name="university" placeholder="e.g. University of Dar es Salaam" value=priest.university || '' oninput="toggleSpecialization('university', this.value)")
+            .form-group#universitySpecWrap(style=priest && priest.university ? '' : 'display:none')
+              label Area of Specialization
+              input(type="text" name="universitySpecialization" placeholder="e.g. Theology & Religious Studies" value=priest.universitySpecialization || '')
+
+        .form-actions
+          a(href=`/admin/priests/step3?priestId=${priest.id}` class="btn btn-secondary")
+            i.fas.fa-arrow-left
+            |  Back
+          button(type="submit" class="btn btn-primary")
+            | Next: Theology & Work
+            i.fas.fa-arrow-right
+
+  script.
+    function toggleSpecialization(type, value) {
+      const wrap = document.getElementById(type + 'SpecWrap');
+      wrap.style.display = value.trim() ? '' : 'none';
+    }

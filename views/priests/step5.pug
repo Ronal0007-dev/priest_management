@@ -1,0 +1,79 @@
+extends ../layouts/main
+
+block content
+  include ../partials/stepIndicator
+
+  .form-page
+    .form-header
+      h2
+        i.fas.fa-church
+        |  #{priest.fullName}
+      p Complete all 5 steps to register a priest
+
+    +stepIndicator(5, priest.id)
+
+    .form-card
+      h3.step-title
+        span.step-badge Step 5
+        |  Theology Education & Work Assignment
+
+      form(action="/admin/priests/step5" method="POST")
+        input(type="hidden" name="priestId" value=priest.id)
+
+        .education-section
+          h4.edu-level
+            i.fas.fa-book-open
+            |  Theology Education
+          .form-grid
+            .form-group
+              label Level of Theology Education *
+              select(name="theologyLevel" required)
+                option(value="" disabled selected=!priest.theologyLevel) -- Select Level --
+                option(value="Certificate" selected=priest.theologyLevel === 'Certificate') Certificate
+                option(value="Diploma" selected=priest.theologyLevel === 'Diploma') Diploma
+                option(value="Degree" selected=priest.theologyLevel === 'Degree') Degree
+                option(value="Masters" selected=priest.theologyLevel === 'Masters') Masters
+
+            .form-group
+              label Theology Institution
+              input(type="text" name="theologyInstitution" placeholder="e.g. Kibosho Seminary" value=priest.theologyInstitution || '')
+
+        .education-section
+          h4.edu-level
+            i.fas.fa-map-marker-alt
+            |  Work Assignment
+          .form-grid
+            .form-group
+              label Diocese Assignment
+              select(name="dioceseId")
+                option(value="" disabled selected=!priest.dioceseId) -- Select Diocese --
+                each diocese in dioceses
+                  option(value=diocese.id selected=priest.dioceseId == diocese.id)= diocese.name
+
+            .form-group
+              label Place of Work
+              input(type="text" name="placeOfWork" placeholder="e.g. St. Peter's Parish, Moshi" value=priest.placeOfWork || '')
+
+            .form-group
+              label Date of Assignment
+              input(type="date" name="dateAssigned" value=priest.dateAssigned || '')
+
+            .form-group
+              label Ordination Date
+              input(type="date" name="ordinationDate" value=priest.ordinationDate || '')
+
+            .form-group
+              label Priest Status
+              select(name="priestStatus")
+                option(value="active" selected=priest.priestStatus === 'active') Active
+                option(value="retired" selected=priest.priestStatus === 'retired') Retired
+                option(value="deceased" selected=priest.priestStatus === 'deceased') Deceased
+                option(value="on_leave" selected=priest.priestStatus === 'on_leave') On Leave
+
+        .form-actions
+          a(href=`/admin/priests/step4?priestId=${priest.id}` class="btn btn-secondary")
+            i.fas.fa-arrow-left
+            |  Back
+          button(type="submit" class="btn btn-success")
+            i.fas.fa-save
+            |  Save Priest Record

@@ -1,0 +1,33 @@
+extends ../layouts/main
+
+block content
+  .page-header
+    h2
+      i.fas.fa-plus-circle
+      |  Add New Diocese
+    a(href="/admin/dioceses" class="btn btn-secondary")
+      i.fas.fa-arrow-left
+      |  Back
+
+  .form-card.form-card-narrow
+    form(action="/admin/dioceses/create" method="POST")
+      .form-group
+        label Diocese Name *
+        input(type="text" name="name" placeholder="e.g. Diocese of Southern Highlands" required autofocus)
+        .field-hint Some common dioceses are pre-loaded. Add new ones here.
+
+      .form-group
+        label Description
+        textarea(name="description" rows="4" placeholder="Brief description of the diocese, location, history...")
+
+      .form-group
+        label Status
+        select(name="isActive")
+          option(value="1") Active
+          option(value="0") Inactive
+
+      .form-actions
+        a(href="/admin/dioceses" class="btn btn-secondary") Cancel
+        button(type="submit" class="btn btn-primary")
+          i.fas.fa-save
+          |  Save Diocese
