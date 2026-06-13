@@ -1,0 +1,127 @@
+extends ../layouts/auth
+
+block content
+  .login-page
+    .login-brand
+      .brand-icon
+        i.fas.fa-lock-open
+      h1.brand-title Password Recovery
+      p.brand-subtitle Diocese Priest Management System
+
+    .login-card
+      .forgot-steps
+        .forgot-step.done
+          .fstep-circle
+            i.fas.fa-check
+          span Find Account
+        .fstep-line.done
+        .forgot-step.done
+          .fstep-circle
+            i.fas.fa-check
+          span Verify
+        .fstep-line.done
+        .forgot-step.active
+          .fstep-circle 3
+          span New Password
+
+      h2.login-heading Set New Password
+      p.login-subtext Choose a strong password for your account
+
+      if flash && flash.error && flash.error.length
+        .alert.alert-error
+          i.fas.fa-exclamation-circle
+          span= flash.error[0]
+
+      form(action="/forgot-password/reset" method="POST")
+        .form-group
+          label
+            i.fas.fa-key
+            |  New Password
+          .input-wrap
+            input#newPw(
+              type="password"
+              name="newPassword"
+              placeholder="Minimum 6 characters"
+              required
+              autocomplete="new-password"
+              oninput="checkStrength(this.value)"
+            )
+            button.toggle-pw(type="button" onclick="togglePw('newPw','ico1')")
+              i.fas.fa-eye#ico1
+
+        .strength-bar-wrap#strengthWrap(style="display:none")
+          .strength-bar
+            .strength-fill#strengthFill
+          span.strength-label#strengthLabel
+
+        .form-group
+          label
+            i.fas.fa-check-circle
+            |  Confirm Password
+          .input-wrap
+            input#confirmPw(
+              type="password"
+              name="confirmPassword"
+              placeholder="Re-enter new password"
+              required
+              autocomplete="new-password"
+              oninput="checkMatch()"
+            )
+            button.toggle-pw(type="button" onclick="togglePw('confirmPw','ico2')")
+              i.fas.fa-eye#ico2
+
+        #matchMsg.match-msg-auth(style="display:none")
+
+        button.btn-login(type="submit")
+          i.fas.fa-save
+          |  Reset Password
+
+    .login-footer
+      p &copy; #{new Date().getFullYear()} Diocese Priest Management System
+
+  script.
+    function togglePw(id, iconId) {
+      const el = document.getElementById(id);
+      const ic = document.getElementById(iconId);
+      el.type = el.type === 'password' ? 'text' : 'password';
+      ic.classList.toggle('fa-eye'); ic.classList.toggle('fa-eye-slash');
+    }
+
+    function checkStrength(val) {
+      const wrap  = document.getElementById('strengthWrap');
+      const fill  = document.getElementById('strengthFill');
+      const label = document.getElementById('strengthLabel');
+      wrap.style.display = val.length ? '' : 'none';
+      if (!val.length) return;
+      let s = 0;
+      if (val.length >= 6)  s++;
+      if (val.length >= 10) s++;
+      if (/[A-Z]/.test(val)) s++;
+      if (/[0-9]/.test(val)) s++;
+      if (/[^A-Za-z0-9]/.test(val)) s++;
+      const lvls = [
+        {w:'20%',c:'#dc3545',t:'Very Weak'},
+        {w:'40%',c:'#f59e0b',t:'Weak'},
+        {w:'60%',c:'#eab308',t:'Fair'},
+        {w:'80%',c:'#22c55e',t:'Strong'},
+        {w:'100%',c:'#15803d',t:'Very Strong'}
+      ];
+      const l = lvls[Math.min(s-1,4)] || lvls[0];
+      fill.style.width = l.w; fill.style.background = l.c;
+      label.textContent = l.t; label.style.color = l.c;
+    }
+
+    function checkMatch() {
+      const np  = document.getElementById('newPw').value;
+      const cp  = document.getElementById('confirmPw').value;
+      const msg = document.getElementById('matchMsg');
+      if (!cp) { msg.style.display = 'none'; return; }
+      msg.style.display = '';
+      if (np === cp) {
+        msg.innerHTML = '<i class="fas fa-check-circle"></i> Passwords match';
+        msg.style.color = '#198754';
+      } else {
+        msg.innerHTML = '<i class="fas fa-times-circle"></i> Passwords do not match';
+        msg.style.color = '#dc3545';
+      }
+    }

@@ -1,0 +1,106 @@
+extends ../layouts/main
+
+block content
+  .form-page
+    .page-header
+      h2
+        i.fas.fa-shield-alt
+        |  Security Question Setup
+      a(href="/admin/dashboard" class="btn btn-secondary")
+        i.fas.fa-arrow-left
+        |  Back
+
+    .account-grid
+      .form-card
+        h3.step-title
+          span.step-badge
+            i.fas.fa-shield-alt
+          |  Set Security Question
+
+        .info-note
+          i.fas.fa-info-circle
+          span
+            | This question will be used to verify your identity if you forget your password.
+            | Keep the answer memorable but not easy for others to guess.
+
+        form(action="/admin/security-setup" method="POST")
+          .form-group
+            label Select a Security Question *
+            select(name="securityQuestion" required)
+              option(value="" disabled selected) -- Choose a question --
+              each q in questions
+                option(value=q)= q
+
+          .form-group
+            label Your Answer *
+            .input-icon-wrap
+              i.fas.fa-comment-dots.input-icon
+              input#answerInput(
+                type="text"
+                name="securityAnswer"
+                placeholder="Type your answer"
+                required
+                autocomplete="off"
+              )
+
+          .form-group
+            label Confirm Answer *
+            .input-icon-wrap
+              i.fas.fa-check-circle.input-icon
+              input#confirmAnswerInput(
+                type="text"
+                name="confirmAnswer"
+                placeholder="Re-type your answer"
+                required
+                autocomplete="off"
+                oninput="checkAnswerMatch()"
+              )
+
+          #answerMatchMsg.match-msg(style="display:none")
+
+          .case-note
+            i.fas.fa-info-circle
+            span Answers are case-insensitive (e.g. "Moshi" and "moshi" are treated the same).
+
+          .form-actions
+            button(type="submit" class="btn btn-primary")
+              i.fas.fa-save
+              |  Save Security Question
+
+      .security-tip-card
+        .tip-header
+          i.fas.fa-question-circle
+          h3 Why Set This Up?
+        ul.tip-list
+          li
+            i.fas.fa-check
+            span Lets you reset your password without admin help
+          li
+            i.fas.fa-check
+            span Keeps your account secure
+          li
+            i.fas.fa-check
+            span Works even without internet or email
+          li
+            i.fas.fa-check
+            span Answer is stored securely (encrypted)
+        .tip-divider
+        .tip-footer
+          i.fas.fa-exclamation-triangle
+          p Remember your answer exactly — it must match what you enter here.
+
+  script.
+    function checkAnswerMatch() {
+      const a = document.getElementById('answerInput').value.toLowerCase().trim();
+      const b = document.getElementById('confirmAnswerInput').value.toLowerCase().trim();
+      const msg = document.getElementById('answerMatchMsg');
+      if (!b) { msg.style.display = 'none'; return; }
+      msg.style.display = '';
+      if (a === b) {
+        msg.textContent = '✓ Answers match';
+        msg.className = 'match-msg match-ok';
+      } else {
+        msg.textContent = '✗ Answers do not match';
+        msg.className = 'match-msg match-error';
+      }
+    }

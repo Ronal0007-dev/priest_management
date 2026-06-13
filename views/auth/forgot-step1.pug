@@ -1,0 +1,57 @@
+extends ../layouts/auth
+
+block content
+  .login-page
+    .login-brand
+      .brand-icon
+        i.fas.fa-key
+      h1.brand-title Password Recovery
+      p.brand-subtitle Diocese Priest Management System
+
+    .login-card
+      .forgot-steps
+        .forgot-step.active
+          .fstep-circle 1
+          span Find Account
+        .fstep-line
+        .forgot-step
+          .fstep-circle 2
+          span Verify
+        .fstep-line
+        .forgot-step
+          .fstep-circle 3
+          span New Password
+
+      h2.login-heading Find Your Account
+      p.login-subtext Enter your administrator username to begin the recovery process
+
+      if flash && flash.error && flash.error.length
+        .alert.alert-error
+          i.fas.fa-exclamation-circle
+          span= flash.error[0]
+
+      form(action="/forgot-password" method="POST")
+        .form-group
+          label
+            i.fas.fa-user
+            |  Username
+          input(
+            type="text"
+            name="username"
+            placeholder="Enter your username"
+            required
+            autofocus
+            autocomplete="username"
+          )
+
+        button.btn-login(type="submit")
+          i.fas.fa-arrow-right
+          |  Continue
+
+      .back-link
+        a(href="/login")
+          i.fas.fa-arrow-left
+          |  Back to Login
+
+    .login-footer
+      p &copy; #{new Date().getFullYear()} Diocese Priest Management System

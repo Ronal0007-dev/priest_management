@@ -35,6 +35,14 @@ html(lang="en")
           a(href="/admin/dioceses/create" class="nav-item")
             i.fas.fa-plus-circle
             span Add Diocese
+        .nav-section
+          span.nav-label Account
+          a(href="/admin/change-password" class=currentPath === '/admin/change-password' ? 'nav-item active' : 'nav-item')
+            i.fas.fa-key
+            span Change Password
+          a(href="/admin/security-setup" class=currentPath === '/admin/security-setup' ? 'nav-item active' : 'nav-item')
+            i.fas.fa-shield-alt
+            span Security Question
       .sidebar-footer
         .user-info
           .user-avatar

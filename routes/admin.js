@@ -16,6 +16,13 @@ const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 // Dashboard
 router.get('/dashboard', adminController.getDashboard);
 
+// Password & Security
+const passwordController = require('../controllers/passwordController');
+router.get('/change-password', passwordController.getChangePassword);
+router.post('/change-password', passwordController.postChangePassword);
+router.get('/security-setup', passwordController.getSecuritySetup);
+router.post('/security-setup', passwordController.postSecuritySetup);
+
 // Dioceses
 router.get('/dioceses', dioceseController.index);
 router.get('/dioceses/print', dioceseController.print);
